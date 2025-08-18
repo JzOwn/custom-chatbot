@@ -35,36 +35,36 @@ async function json<T>(res: Response): Promise<T> {
 
 export const api = {
 	listAssistants(): Promise<Assistant[]> {
-		return fetch(`${API_BASE}/api/assistant`).then(json)
+		return fetch(`${API_BASE}/api/assistant`).then(res => json<Assistant[]>(res))
 	},
 	createAssistant(payload: { name: string; instructions: string; model?: string }): Promise<Assistant> {
 		return fetch(`${API_BASE}/api/assistant`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(payload),
-		}).then(json)
+		}).then(res => json<Assistant>(res))
 	},
 	updateAssistant(id: number, payload: { name?: string; instructions?: string }): Promise<Assistant> {
 		return fetch(`${API_BASE}/api/assistant/${id}`, {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(payload),
-		}).then(json)
+		}).then(res => json<Assistant>(res))
 	},
 	getAssistant(id: number): Promise<Assistant> {
-		return fetch(`${API_BASE}/api/assistant/${id}`).then(json)
+		return fetch(`${API_BASE}/api/assistant/${id}`).then(res => json<Assistant>(res))
 	},
 	createThread(assistantId: number, title: string): Promise<Thread> {
 		return fetch(`${API_BASE}/api/thread/${assistantId}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ title }),
-		}).then(json)
+		}).then(res => json<Thread>(res))
 	},
 	listThreads(assistantId: number): Promise<Thread[]> {
-		return fetch(`${API_BASE}/api/threads/${assistantId}`).then(json)
+		return fetch(`${API_BASE}/api/threads/${assistantId}`).then(res => json<Thread[]>(res))
 	},
 	listMessages(threadId: number): Promise<Message[]> {
-		return fetch(`${API_BASE}/api/messages/${threadId}`).then(json)
+		return fetch(`${API_BASE}/api/messages/${threadId}`).then(res => json<Message[]>(res))
 	},
 }
