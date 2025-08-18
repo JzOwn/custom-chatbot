@@ -1,8 +1,9 @@
-name: Deploy client to GitHub Pages
+name: Deploy static content to Pages
 
 on:
   push:
     branches: ["main"]
+
   workflow_dispatch:
 
 permissions:
@@ -23,33 +24,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install deps
-        working-directory: client
-        run: npm ci
-
-      - name: Build (GitHub Pages base path)
-        working-directory: client
-        env:
-          VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
-        run: |
-          BASE="/${{ github.event.repository.name }}/"
-          npx vite build --base="$BASE"
-          cp dist/index.html dist/404.html
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: client/dist
-
+          path: 'client/dist'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
