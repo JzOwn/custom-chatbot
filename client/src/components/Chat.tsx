@@ -25,7 +25,7 @@ export function Chat({ assistantId, threadId }: { assistantId: number; threadId:
 
 	return (
 		<div className="flex flex-col h-full max-h-[calc(100vh-50px)]">
-			<div ref={listRef} className="flex-1 overflow-y-auto space-y-3 pr-2 pb-3 scrollbar-hide">
+			<div ref={listRef} className="flex-1 overflow-y-auto space-y-3 pr-2 pb-3">
 				{items.map(m => (
 					<div key={`${m.id}-${m.created_at}`} className={`p-3 rounded relative ${m.role === 'user' ? 'bg-blue-50' : 'bg-gray-100'}`}>
 						<div className="text-xs text-gray-500 mb-1 flex items-center gap-2">
