@@ -24,28 +24,28 @@ export function Chat({ assistantId, threadId }: { assistantId: number; threadId:
 	const items = useMemo(() => messages, [messages])
 
 	return (
-		<div className="flex flex-col h-full min-h-[100vh]">
-			<div ref={listRef} className="flex-1 overflow-y-auto space-y-3 pr-2 pb-3">
-							{items.map(m => (
-								<div key={`${m.id}-${m.created_at}`} className={`p-3 rounded relative ${m.role === 'user' ? 'bg-blue-50' : 'bg-gray-100'}`}>
-									<div className="text-xs text-gray-500 mb-1 flex items-center gap-2">
-										<span>{m.role}</span>
-										{m.role === 'assistant' && (
-											<button
-												type="button"
-												className="ml-2 text-xs text-blue-600 hover:underline focus:outline-none"
-												onClick={() => {
-													navigator.clipboard.writeText(m.content)
-													// Optionally, you could show a toast or feedback here
-												}}
-											>
-												Copy
-											</button>
-										)}
-									</div>
-									<div className="whitespace-pre-wrap">{m.content}</div>
-								</div>
-							))}
+		<div className="flex flex-col h-full max-h-[calc(100vh-50px)]">
+			<div ref={listRef} className="flex-1 overflow-y-auto space-y-3 pr-2 pb-3 scrollbar-hide">
+				{items.map(m => (
+					<div key={`${m.id}-${m.created_at}`} className={`p-3 rounded relative ${m.role === 'user' ? 'bg-blue-50' : 'bg-gray-100'}`}>
+						<div className="text-xs text-gray-500 mb-1 flex items-center gap-2">
+							<span>{m.role}</span>
+							{m.role === 'assistant' && (
+								<button
+									type="button"
+									className="ml-2 text-xs text-blue-600 hover:underline focus:outline-none"
+									onClick={() => {
+										navigator.clipboard.writeText(m.content)
+										// Optionally, you could show a toast or feedback here
+									}}
+								>
+									Copy
+								</button>
+							)}
+						</div>
+						<div className="whitespace-pre-wrap">{m.content}</div>
+					</div>
+				))}
 				{items.length === 0 && <div className="text-gray-500">No messages yet.</div>}
 				{streaming && <div className="text-gray-500">Streaming...</div>}
 				{error && <div className="text-red-600 text-sm mt-2">{error}</div>}
@@ -68,7 +68,6 @@ export function Chat({ assistantId, threadId }: { assistantId: number; threadId:
 					</button>
 				</form>
 			</div>
-			{error && <div className="text-red-600 text-sm mt-2">{error}</div>}
 		</div>
 	)
 }

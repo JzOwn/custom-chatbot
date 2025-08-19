@@ -12,7 +12,7 @@ export default function App() {
 
 	return (
 		<div className="h-full grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
-			<div className="md:col-span-1 space-y-4">
+			<div className="md:col-span-1 space-y-4 ">
 				<div className="bg-white rounded-lg shadow p-4">
 					<h2 onClick={() => setIsOpen(!isAssistantOpen)} className="font-semibold mb-2">Assistants ({selectedAssistant?.name}) {isAssistantOpen ? '▲' : '▼'}</h2>
 					<div className={isAssistantOpen ? 'block' : 'hidden'}>
