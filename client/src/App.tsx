@@ -19,8 +19,8 @@ export default function App() {
 	}, [theme, setTheme])
 
 	return (
-		<div className="h-full grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-900 transition-colors">
-			<div className="md:col-span-1 space-y-4 ">
+		<div className="h-full grid grid-cols-1 md:grid-cols-12 gap-4 p-4 bg-gray-50 dark:bg-gray-900 transition-colors">
+			<div className="md:col-span-2 space-y-4 ">
 				<div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 transition-colors">
 					{/* <h2 onClick={() => setIsOpen(!isAssistantOpen)} className="font-semibold mb-2">Assistants ({selectedAssistant?.name}) {isAssistantOpen ? '▲' : '▼'}</h2> */}
 					<div className='flex items-center'>
@@ -37,7 +37,7 @@ export default function App() {
 					</div>
 				)}
 			</div>
-			<div className="md:col-span-3">
+			<div className="md:col-span-10">
 				<div className="bg-white dark:bg-gray-800 rounded-lg shadow h-full p-4 flex flex-col transition-colors">
 					{threadId ? (
 						<Chat threadId={threadId} assistantId={assistantId!} />

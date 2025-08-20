@@ -67,4 +67,10 @@ export const api = {
 	listMessages(threadId: number): Promise<Message[]> {
 		return fetch(`${API_BASE}/api/messages/${threadId}`).then(res => json<Message[]>(res))
 	},
+	syncMessages(threadId: number): Promise<{ synced: number; total: number }> {
+		return fetch(`${API_BASE}/api/sync/${threadId}`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+		}).then(res => json<{ synced: number; total: number }>(res))
+	},
 }

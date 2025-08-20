@@ -30,6 +30,7 @@ type Actions = {
 	loadMessages: (threadId: number) => Promise<void>
 
 	sendMessage: (assistantId: number, threadId: number, content: string) => Promise<void>
+	syncMessages: (threadId: number) => Promise<void>
 	
 	setTheme: (theme: Theme) => void
 	toggleTheme: () => void
@@ -162,6 +163,20 @@ export const useAppStore = create<State & Actions>()(
 					set({ error: e.message })
 				} finally {
 					set({ streaming: false })
+				}
+			},
+
+			syncMessages: async (threadId) => {
+				set({ loading: true, error: undefined })
+				try {
+					const result = await api.syncMessages(threadId)
+					console.log(`Synced ${result.synced} of ${result.total} messages`)
+					// Reload messages after sync
+					await get().loadMessages(threadId)
+				} catch (e: any) {
+					set({ error: e.message })
+				} finally {
+					set({ loading: false })
 				}
 			},
 

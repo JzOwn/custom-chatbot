@@ -122,8 +122,49 @@ app.get('/api/threads/:assistantId', async (c) => {
 app.get('/api/messages/:threadId', async (c) => {
 	const threadId = Number(c.req.param('threadId'));
 	if (!Number.isFinite(threadId)) return c.json({ error: 'Invalid threadId' }, 400);
-	const res = await query('SELECT id, thread_id, role, content, created_at FROM messages WHERE thread_id=$1 ORDER BY created_at ASC', [threadId]);
+	const res = await query('SELECT id, thread_id, role, content, openai_message_id, created_at FROM messages WHERE thread_id=$1 ORDER BY created_at ASC', [threadId]);
 	return c.json(res.rows);
+});
+
+// Sync messages from OpenAI
+app.post('/api/sync/:threadId', async (c) => {
+	try {
+		const threadId = Number(c.req.param('threadId'));
+		if (!Number.isFinite(threadId)) return c.json({ error: 'Invalid threadId' }, 400);
+
+		const threadRow = await query<{ openai_threadid: string }>('SELECT openai_threadid FROM threads WHERE id=$1', [threadId]);
+		if (threadRow.rows.length === 0) return c.json({ error: 'Thread not found' }, 404);
+
+		const openaiThreadId = threadRow.rows[0].openai_threadid;
+		
+		// Delete all existing messages for this thread
+		await query('DELETE FROM messages WHERE thread_id = $1', [threadId]);
+		
+		// Get messages from OpenAI
+		const messages = await openai.beta.threads.messages.list(openaiThreadId, {
+			order: 'asc'
+		});
+
+		let synced = 0;
+		for (const message of messages.data) {
+			const content = message.content[0]?.type === 'text' 
+				? message.content[0].text.value 
+				: '';
+			
+			// Insert fresh message from OpenAI
+			const result = await query(
+				`INSERT INTO messages (thread_id, role, content, openai_message_id, created_at) 
+				 VALUES ($1, $2, $3, $4, $5) 
+				 RETURNING id`,
+				[threadId, message.role, content, message.id, new Date(message.created_at * 1000)]
+			);
+			if (result.rows.length > 0) synced++;
+		}
+
+		return c.json({ synced, total: messages.data.length, deleted: true });
+	} catch (err: any) {
+		return c.json({ error: err?.message || 'Failed to sync messages' }, 500);
+	}
 });
 
 // Chat streaming
@@ -145,20 +186,39 @@ app.post('/api/chat/:assistantId', async (c) => {
 		const openAiThreadId = threadRow.rows[0].openai_threadid;
 
 		// Save user message locally
-		await query('INSERT INTO messages (thread_id, role, content) VALUES ($1, $2, $3)', [threadId, 'user', content]);
-
-		// Send to OpenAI thread
-		await openai.beta.threads.messages.create(openAiThreadId, {
+		const userMessage = await openai.beta.threads.messages.create(openAiThreadId, {
 			role: 'user',
 			content,
 		});
+		await query('INSERT INTO messages (thread_id, role, content, openai_message_id) VALUES ($1, $2, $3, $4)', [threadId, 'user', content, userMessage.id]);
 
 		// Stream assistant response
 		return streamSSE(c, async (stream) => {
 			let assistantText = '';
+			let messageSaved = false;
+			let openaiMessageId: string | null = null;
+			
+			const saveMessage = async () => {
+				if (assistantText.trim().length > 0 && !messageSaved) {
+					try {
+						await query('INSERT INTO messages (thread_id, role, content, openai_message_id) VALUES ($1, $2, $3, $4)', [threadId, 'assistant', assistantText, openaiMessageId]);
+						messageSaved = true;
+					} catch (err) {
+						console.error('Failed to save assistant message:', err);
+					}
+				}
+			};
+
 			try {
 				const runStream: any = await openai.beta.threads.runs.stream(openAiThreadId, {
 					assistant_id: openAiAssistantId,
+				});
+
+				runStream.on('textCreated', (text: any) => {
+					// Capture the message ID when text is created
+					if (text.id) {
+						openaiMessageId = text.id;
+					}
 				});
 
 				runStream.on('textDelta', (delta: any) => {
@@ -166,24 +226,32 @@ app.post('/api/chat/:assistantId', async (c) => {
 					stream.writeSSE({ event: 'token', data: String(delta.value || '') });
 				});
 
-				runStream.on('messageCompleted', () => {
-					// optional marker
+				runStream.on('messageCompleted', async (message: any) => {
+					// Capture message ID if not already captured
+					if (message?.id) {
+						openaiMessageId = message.id;
+					}
+					// Save message when completed, don't wait for end
+					await saveMessage();
 					stream.writeSSE({ event: 'message_completed', data: 'done' });
 				});
 
 				runStream.on('end', async () => {
-					if (assistantText.trim().length > 0) {
-						await query('INSERT INTO messages (thread_id, role, content) VALUES ($1, $2, $3)', [threadId, 'assistant', assistantText]);
-					}
+					// Fallback save in case messageCompleted didn't fire
+					await saveMessage();
 					stream.writeSSE({ event: 'done', data: '[DONE]' });
 				});
 
-				runStream.on('error', (e: any) => {
+				runStream.on('error', async (e: any) => {
+					// Save message even on error if we have content
+					await saveMessage();
 					stream.writeSSE({ event: 'error', data: String(e?.message || 'stream error') });
 				});
 
 				await runStream.done();
 			} catch (e: any) {
+				// Save message even on exception if we have content
+				await saveMessage();
 				stream.writeSSE({ event: 'error', data: String(e?.message || 'Failed to stream') });
 			}
 		});
