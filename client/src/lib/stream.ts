@@ -34,16 +34,23 @@ export async function streamChat(
 
 		let sep
 		while ((sep = buf.indexOf('\n\n')) !== -1) {
-			const frame = buf.slice(0, sep).trim()
+			const frame = buf.slice(0, sep)
 			buf = buf.slice(sep + 2)
 			if (!frame) continue
 
 			let ev = 'message'
 			let data = ''
-			for (const line of frame.split('\n')) {
-				if (line.startsWith('event:')) ev = line.slice(7)
-				else if (line.startsWith('data:')) data += (data ? '\n' : '') + line.slice(6)
+			const lines = frame.split('\n')
+			
+			for (const line of lines) {
+				if (line.startsWith('event: ')) {
+					ev = line.slice(7).trim()
+				} else if (line.startsWith('data: ')) {
+					const content = line.slice(6)
+					data += (data ? '\n' : '') + content
+				}
 			}
+			
 			if (ev === 'token') events.onToken?.(data)
 			else if (ev === 'message_completed') events.onCompleted?.()
 			else if (ev === 'done') events.onDone?.()
