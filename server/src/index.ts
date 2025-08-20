@@ -136,21 +136,22 @@ app.post('/api/sync/:threadId', async (c) => {
 		if (threadRow.rows.length === 0) return c.json({ error: 'Thread not found' }, 404);
 
 		const openaiThreadId = threadRow.rows[0].openai_threadid;
-		
+
 		// Delete all existing messages for this thread
 		await query('DELETE FROM messages WHERE thread_id = $1', [threadId]);
-		
+
 		// Get messages from OpenAI
 		const messages = await openai.beta.threads.messages.list(openaiThreadId, {
-			order: 'asc'
+			order: 'asc',
+			limit: 100
 		});
 
 		let synced = 0;
 		for (const message of messages.data) {
-			const content = message.content[0]?.type === 'text' 
-				? message.content[0].text.value 
+			const content = message.content[0]?.type === 'text'
+				? message.content[0].text.value
 				: '';
-			
+
 			// Insert fresh message from OpenAI
 			const result = await query(
 				`INSERT INTO messages (thread_id, role, content, openai_message_id, created_at) 
@@ -197,7 +198,7 @@ app.post('/api/chat/:assistantId', async (c) => {
 			let assistantText = '';
 			let messageSaved = false;
 			let openaiMessageId: string | null = null;
-			
+
 			const saveMessage = async () => {
 				if (assistantText.trim().length > 0 && !messageSaved) {
 					try {

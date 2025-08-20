@@ -28,7 +28,7 @@ export function ThreadList({ assistantId }: { assistantId: number }) {
 						New
 					</button>
 				</div>)}
-			<ul className="divide-y divide-gray-200 dark:divide-gray-600 border border-gray-200 dark:border-gray-600 rounded max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-hide bg-white dark:bg-gray-800 transition-colors">
+			<ul className="divide-y divide-gray-200 dark:divide-gray-600 border border-gray-200 dark:border-gray-600 rounded max-h-[calc(100vh-180px)] overflow-y-auto scrollbar-hide bg-white dark:bg-gray-800 transition-colors">
 				{threads.map(t => (
 					<>
 						<li

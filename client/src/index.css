@@ -18,3 +18,57 @@ body {
   width: 0 !important;
   height: 0 !important;
 }
+
+/* Custom themed scrollbars */
+* {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgb(156 163 175) rgb(243 244 246); /* gray-400 on gray-100 */
+}
+
+/* Dark theme scrollbars for Firefox */
+.dark * {
+  scrollbar-color: rgb(75 85 99) rgb(31 41 55); /* gray-600 on gray-800 */
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: rgb(243 244 246); /* gray-100 */
+  border-radius: 4px;
+}
+
+.dark *::-webkit-scrollbar-track {
+  background-color: rgb(31 41 55); /* gray-800 */
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(156 163 175); /* gray-400 */
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgb(75 85 99); /* gray-600 */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(107 114 128); /* gray-500 */
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(107 114 128); /* gray-500 */
+}
+
+/* Corner where horizontal and vertical scrollbars meet */
+*::-webkit-scrollbar-corner {
+  background-color: rgb(243 244 246); /* gray-100 */
+}
+
+.dark *::-webkit-scrollbar-corner {
+  background-color: rgb(31 41 55); /* gray-800 */
+}

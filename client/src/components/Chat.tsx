@@ -33,10 +33,23 @@ export function Chat({ assistantId, threadId }: { assistantId: number; threadId:
 			<button
 				type="button"
 				onClick={onSync}
-				className="dark:bg-gray-700 absolute rounded top-0 right-0 w-6 h-6 z-10 transition-colors"
+				className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 absolute rounded top-0 right-0 w-8 h-8 z-10 transition-colors flex items-center justify-center"
 				disabled={loading || streaming}
+				title="Sync messages from OpenAI"
 			>
-				R
+				<svg 
+					className={`w-4 h-4 text-gray-600 dark:text-gray-300 ${(loading || streaming) ? 'animate-spin' : ''}`}
+					fill="none" 
+					stroke="currentColor" 
+					viewBox="0 0 24 24"
+				>
+					<path 
+						strokeLinecap="round" 
+						strokeLinejoin="round" 
+						strokeWidth={2} 
+						d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+					/>
+				</svg>
 			</button>
 			<div ref={listRef} className="flex-1 overflow-y-auto space-y-3 pr-2 pb-3">
 				{items.map(m => (
@@ -83,7 +96,7 @@ export function Chat({ assistantId, threadId }: { assistantId: number; threadId:
 						value={input}
 						onChange={e => setInput(e.target.value)}
 					/>
-					<button className="absolute right-2 bottom-2 z-10 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors" disabled={!input.trim() || streaming}>
+					<button className="absolute right-5 bottom-2 z-10 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors" disabled={!input.trim() || streaming}>
 						Send
 					</button>
 				</form>
